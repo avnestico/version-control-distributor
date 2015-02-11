@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Revision Control Distributor
+# Version Control Distributor
 #
 # Configures a repo hosted on either Github or Bitbicket to be hosted on both.
 
@@ -19,22 +19,22 @@ function help_wanted {
 
 function print_help {
     echo "
-rcd.sh: Revision Control Distributor
+vcd.sh: Version Control Distributor
 
 If you:
   * have a local repo that pushes to one of Github or Bitbucket
   * have an empty repo with the same name hosted at the other site, and
   * want to push code to both repos:
 
-    rcd.sh ~/path/to/repository/
+    vcd.sh ~/path/to/repository/
 
 If the empty repo has a different name:
 
-    rcd.sh ~/path/to/repository/ <empty_repo_name>
+    vcd.sh ~/path/to/repository/ <empty_repo_name>
 
 To view this help message:
 
-    rcd.sh -h"
+    vcd.sh -h"
     return 0
 }
 
@@ -92,8 +92,8 @@ function git_remote_add {
         repo="${repo}.git"
     fi
 
-    # example urls:    git@github.com:avnestico/revision-control-distributor.git
-    # https://avnestico@bitbucket.org/avnestico/revision-control-distributor.git
+    # example urls:    git@github.com:avnestico/version-control-distributor.git
+    # https://avnestico@bitbucket.org/avnestico/version-control-distributor.git
     url="${url}${host}${tld}${sep}${user}/${repo}"
     echo "${url}"
     # git remote add ${host} ${url} || ( echo "git remote add failed" && exit 2 )
@@ -107,18 +107,18 @@ then
     exit $?
 fi
 
-git_remote_add https bitbucket avnestico revision-control-distributor
-git_remote_add https github avnestico revision-control-distributor
-git_remote_add ssh bitbucket avnestico revision-control-distributor
-git_remote_add ssh github avnestico revision-control-distributor
+git_remote_add https bitbucket avnestico version-control-distributor
+git_remote_add https github avnestico version-control-distributor
+git_remote_add ssh bitbucket avnestico version-control-distributor
+git_remote_add ssh github avnestico version-control-distributor
 
 # check if https or ssh
 # if https, ask if user wants to switch to ssh
-# git remote set-url --add origin git@bitbucket.org:avnestico/revision-control-distributor.git
-# git remote add bitbucket git@bitbucket.org:avnestico/revision-control-distributor.git
-# git remote add github git@github.com:avnestico/revision-control-distributor.git
+# git remote set-url --add origin git@bitbucket.org:avnestico/version-control-distributor.git
+# git remote add bitbucket git@bitbucket.org:avnestico/version-control-distributor.git
+# git remote add github git@github.com:avnestico/version-control-distributor.git
 # git push --all
 
-# https://avnestico@bitbucket.org/avnestico/revision-control-distributor.git
-# https://github.com/avnestico/revision-control-distributor.git
+# https://avnestico@bitbucket.org/avnestico/version-control-distributor.git
+# https://github.com/avnestico/version-control-distributor.git
 exit 0
