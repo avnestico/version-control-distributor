@@ -22,15 +22,22 @@ function print_help {
 vcd.sh: Version Control Distributor
 
 If you:
-  * have a local repo that pushes to one of Github or Bitbucket
-  * have an empty repo with the same name hosted at the other site, and
-  * want to push code to both repos:
 
-    vcd.sh ~/path/to/repository/
+  * have a local repo that pushes to one of Github or Bitbucket;
+  * have an empty repo with the same name hosted at the other site; and
+  * want to push code to both repos,
 
-If the empty repo has a different name:
+simply run:
 
-    vcd.sh ~/path/to/repository/ <empty_repo_name>
+    vcd.sh path/to/repository/
+
+For example, to use this script on itself, run:
+
+    vcd.sh .
+
+If the name of the empty repo is different from the name of the established repo, run:
+
+    vcd.sh path/to/repository/ <empty_repo_name>
 
 To view this help message:
 
@@ -51,22 +58,22 @@ To view this help message:
 #   2: remote not successfully added
 #######################################
 function git_remote_add {
-    protocol="$1"
-    host="$2"
-    user="$3"
-    repo="$4"
+    protocol="${1}"
+    host="${2}"
+    user="${3}"
+    repo="${4}"
 
     # Begin crafting url by checking whether protocol is https or git
     if [ "${protocol}" == "https" ]
     then
         url="https://"
-        # Bitbucket https urls are of the form https://${user}@bitbucket.com/${user}/${repo}
+        # Bitbucket https urls are of the form https://${user}@bitbucket.com/${user}/${repo}.git
         if [ "${host}" == "bitbucket" ]
         then
             url="${url}${user}@"
         fi
         sep="/"
-    elif [ "${protocol}" == "git" ]
+    elif [ "${protocol}" == "ssh" ]
     then
         url="git@"
         sep=":"
@@ -100,17 +107,29 @@ function git_remote_add {
     # exit 0
 }
 
-# If args are used improperly, or help is wanted, print help and exit
-if [ "$#" -eq 0 ] || [ "$#" -gt 2 ] || help_wanted "$@"
-then
-    print_help
-    exit $?
-fi
+function main() {
+    # If args are used improperly, or help is wanted, print help and exit
+    if [ "$#" -eq 0 ] || [ "$#" -gt 2 ] || help_wanted "$@"
+    then
+        print_help
+        exit $?
+    fi
 
-git_remote_add https bitbucket avnestico version-control-distributor
-git_remote_add https github avnestico version-control-distributor
-git_remote_add ssh bitbucket avnestico version-control-distributor
-git_remote_add ssh github avnestico version-control-distributor
+    repo_name="${1}"
+    cd "${PWD}/${repo_name}"
+    dotgitdir="$(git rev-parse --git-dir 2> /dev/null)"
+    if [[ -z "${dotgitdir}" ]]
+    then
+        echo "Error: Not a git directory"
+        print_help
+        exit 2
+    fi
+
+    git_remote_add https bitbucket avnestico version-control-distributor
+    git_remote_add https github avnestico version-control-distributor
+    git_remote_add ssh bitbucket avnestico version-control-distributor
+    git_remote_add ssh github avnestico version-control-distributor
+}
 
 # check if https or ssh
 # if https, ask if user wants to switch to ssh
@@ -121,4 +140,8 @@ git_remote_add ssh github avnestico version-control-distributor
 
 # https://avnestico@bitbucket.org/avnestico/version-control-distributor.git
 # https://github.com/avnestico/version-control-distributor.git
-exit 0
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
+then
+    main "$@"
+    exit $?
+fi
