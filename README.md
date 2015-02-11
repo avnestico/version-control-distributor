@@ -4,10 +4,11 @@
 
 If you:
 
-  * have a local repo that pushes to one of Github or Bitbucket
-  * have an empty repo with the same name hosted at the other site, and
-  * want to push code to both repos, simply run:
+  * have a local repo that pushes to one of Github or Bitbucket;
+  * have an empty repo with the same name hosted at the other site; and
+  * want to push code to both repos,
 
+simply run:
 
     vcd.sh ~/path/to/repository/
 
