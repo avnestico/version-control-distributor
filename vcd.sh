@@ -57,7 +57,7 @@ To view this help message:
 #   1: invalid parameter
 #   2: remote not successfully added
 #######################################
-function git_remote_add {
+function get_gra_url {
     protocol="${1}"
     host="${2}"
     user="${3}"
@@ -108,13 +108,14 @@ function git_remote_add {
 }
 
 function main() {
-    # If args are used improperly, or help is wanted, print help and exit
+    # If no args, or more than 2 args, or help is wanted, print help and exit
     if [ "$#" -eq 0 ] || [ "$#" -gt 2 ] || help_wanted "$@"
     then
         print_help
         exit $?
     fi
 
+    # Confirm that the given path is actually a git directory
     repo_name="${1}"
     cd "${PWD}/${repo_name}"
     dotgitdir="$(git rev-parse --git-dir 2> /dev/null)"
@@ -124,11 +125,7 @@ function main() {
         print_help
         exit 2
     fi
-
-    git_remote_add https bitbucket avnestico version-control-distributor
-    git_remote_add https github avnestico version-control-distributor
-    git_remote_add ssh bitbucket avnestico version-control-distributor
-    git_remote_add ssh github avnestico version-control-distributor
+    cd "${dotgitdir}"
 }
 
 # check if https or ssh
