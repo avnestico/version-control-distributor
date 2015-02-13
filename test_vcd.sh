@@ -80,6 +80,10 @@ function test_git_remote_add() {
         result=$((result + 1))
     fi
 
+    # Clean up temp dir
+    cd ..
+    rm -rf "${tempdir}"
+
     return "${result}"
 }
 
