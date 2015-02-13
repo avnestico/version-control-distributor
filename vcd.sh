@@ -57,7 +57,7 @@ To view this help message:
 #   1: invalid parameter
 #   2: remote not successfully added
 #######################################
-function get_gra_url {
+function git_remote_add {
     protocol="${1}"
     host="${2}"
     user="${3}"
@@ -79,7 +79,7 @@ function get_gra_url {
         sep=":"
     else
         echo "Invalid protocol: ${protocol}"
-        exit 1
+        return 1
     fi
 
     if [ "${host}" == "bitbucket" ]
@@ -90,7 +90,7 @@ function get_gra_url {
         tld=".com"
     else
         echo "Invalid host: ${host}"
-        exit 1
+        return 1
     fi
 
     # Double check that the url ends in ".git"
@@ -102,9 +102,11 @@ function get_gra_url {
     # example urls:    git@github.com:avnestico/version-control-distributor.git
     # https://avnestico@bitbucket.org/avnestico/version-control-distributor.git
     url="${url}${host}${tld}${sep}${user}/${repo}"
-    echo "${url}"
-    # git remote add ${host} ${url} || ( echo "git remote add failed" && exit 2 )
-    # exit 0
+    echo "Repo URL: ${url}"
+
+    # Attempt to perform git remote add
+    git remote add ${host} ${url} || ( echo "git remote add failed" && return 2 )
+    return 0
 }
 
 function main() {
