@@ -2,7 +2,7 @@
 
 ## A little script that puts the 'Distributed' back in 'Distributed Version Control'
 
-This project is hosted on both [GitHub](https://github.com/avnestico/version-control-distributor) and [Bitbucket](https://bitbucket.org/avnestico/version-control-distributor).
+This project is hosted on both [GitHub](https://github.com/avnestico/version-control-distributor) and [Bitbucket](https://bitbucket.org/avnestico/version-control-distributor), and your projects should be too.
 
 ---
 
@@ -37,7 +37,7 @@ Once that's done, run `git remote -v`. The result should look something like thi
     origin  git@github.com:avnestico/version-control-distributor.git (push)
     origin  git@bitbucket.org:avnestico/version-control-distributor.git (push)
 
-From now on, all you need to do is `git push` and your code will be mirrored on both remote repositories.
+From now on, all you need to do is `git push [--all]` and your code will be mirrored on both remote repositories.
 
 ---
 
