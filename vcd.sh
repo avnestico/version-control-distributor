@@ -193,11 +193,14 @@ function main() {
         empty_repo_name="${2}"
     fi
 
+    # Perform git remote functions
     git_remote_seturl "${protocol}" "${new_host}" "${username}" "${empty_repo_name}"
     git_remote_add "${protocol}" "${host}" "${username}" "${reponame}"
     git_remote_add "${protocol}" "${new_host}" "${username}" "${empty_repo_name}"
 
-    echo "Use 'git push' or 'git push --all' to push your content to both repos."
+    echo "Process ended successfully. Use 'git push' or 'git push --all' to push your content to both repos."
+    echo "git remote -v:"
+    git remote -v
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]

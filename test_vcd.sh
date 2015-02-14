@@ -106,7 +106,6 @@ function test_main() {
     temp_git_dir temp_dir
     git remote add origin "${url}"
     main . "${2}"
-    git remote -v
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
