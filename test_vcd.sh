@@ -24,6 +24,22 @@ function run_test() {
     return "${result}"
 }
 
+function temp_git_dir() {
+    # Make new temp directory and initalize an empty git repo there
+    dir_name="temp_${RANDOM}"
+    mkdir "${dir_name}" && cd "${dir_name}"
+    git init >/dev/null
+
+    # Return string by reference
+    eval "${1}=${dir_name}"
+}
+
+function clean_dir() {
+    # Clean up temp dir
+    cd ..
+    rm -rf "${1}"
+}
+
 function test_git_remote_add() {
     result=0
 
@@ -36,36 +52,36 @@ function test_git_remote_add() {
     do
         for host in bitbucket github
         do
-            # Make new temp directory and initalize an empty git repo there
-            tempdir="temp_${RANDOM}"
-            mkdir "${tempdir}" && cd "${tempdir}"
-            git init >/dev/null
+            # Create temp dir and initialize temporary git repo
+            temp_git_dir temp_dir
 
-            valid_url="test_${protocol}_${host}"
+            # Select variable name of expected url from the set above
+            expected_url="test_${protocol}_${host}"
+
+            # Perform git remote add and get url
             git_remote_add ${protocol} ${host} avnestico example >/dev/null
             test_return=$?
             test_url="$(git remote -v | grep fetch | sed -r 's/^\w+\s+(.*)\s\(fetch\)$/\1/' )"
 
-            if [[ "${test_return}" -eq 0 ]] && [[ "${!valid_url}" == "${test_url}" ]]
+            # Use variable indirection ("!") to compare expected url to test url
+            if [[ "${test_return}" -eq 0 ]] && [[ "${!expected_url}" == "${test_url}" ]]
             then
                 echo "[Test] (git_remote_add) ${protocol} ${host} [Passed]"
             else
                 echo "[Test] (git_remote_add) ${protocol} ${host} [Failed]"
-                echo "Expected: ${!valid_url}"
+                echo "Expected: ${!expected_url}"
                 echo "Got: ${test_url}"
                 result=$((result + 1))
             fi
 
-            # Clean up temp dir
-            cd ..
-            rm -rf "${tempdir}"
+            clean_dir "${temp_dir}"
         done
     done
 
     # Test bad parameters
-    tempdir="temp_${RANDOM}"
-    mkdir "${tempdir}" && cd "${tempdir}"
-    git init >/dev/null
+
+    # Create temp dir and initialize temporary git repo
+    temp_git_dir temp_dir
 
     git_remote_add bad params avnestico example >/dev/null
     test_return=$?
@@ -80,9 +96,7 @@ function test_git_remote_add() {
         result=$((result + 1))
     fi
 
-    # Clean up temp dir
-    cd ..
-    rm -rf "${tempdir}"
+    clean_dir "${temp_dir}"
 
     return "${result}"
 }
