@@ -157,6 +157,9 @@ function main() {
     fi
     cd "${dotgitdir}"
 
+    # Back up old config, just in case.
+    cp config config.bak
+
     # Confirm the directory has one remote repo (that it pushes to and pulls from)
     push_repos="$(git remote -v | grep push | wc -l)"
     fetch_repos="$(git remote -v | grep fetch | wc -l)"
