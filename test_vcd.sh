@@ -61,7 +61,7 @@ function test_git_remote_add() {
             # Perform git remote add and get url
             git_remote_add ${protocol} ${host} avnestico example >/dev/null
             test_return=$?
-            test_url="$(git remote -v | grep fetch | sed -r 's/^\w+\s+(.*)\s\(fetch\)$/\1/' )"
+            get_fetch_url test_url
 
             # Use variable indirection ("!") to compare expected url to test url
             if [[ "${test_return}" -eq 0 ]] && [[ "${!expected_url}" == "${test_url}" ]]
@@ -101,7 +101,21 @@ function test_git_remote_add() {
     return "${result}"
 }
 
+function test_main() {
+    url="${1}"
+    temp_git_dir temp_dir
+    git remote add origin "${url}"
+    main . "${2}"
+    git remote -v
+}
+
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
 then
-    run_test git_remote_add
+    test_main "git@github.com:avnestico/example.git"
+    test_main "git@bitbucket.com:avnestico/example.git"
+    test_main "https://avnestico@bitbucket.org/avnestico/example.git"
+    test_main "https://github.com/avnestico/example.git"
+    test_main "https://github.com/avnestico/example.git" "other_example"
+
+    #run_test git_remote_add
 fi

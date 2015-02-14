@@ -45,19 +45,12 @@ To view this help message:
     return 0
 }
 
-#######################################
-# Craft repo url and add to git config using git remote add
-# Arguments:
-#   protocol: https or git
-#   host: host of existing repo (bitbucket or github)
-#   user: username
-#   repo: name of repo
-# Returns:
-#   0: remote added successfully
-#   1: invalid parameter
-#   2: remote not successfully added
-#######################################
-function git_remote_add {
+function get_fetch_url() {
+    fetch_url="$(git remote -v | grep fetch | sed -r 's/^\w+\s+(.*)\s\(fetch\)$/\1/' )"
+    eval "${1}=${fetch_url}"
+}
+
+function craft_url() {
     protocol="${1}"
     host="${2}"
     user="${3}"
@@ -102,10 +95,45 @@ function git_remote_add {
     # example urls:    git@github.com:avnestico/version-control-distributor.git
     # https://avnestico@bitbucket.org/avnestico/version-control-distributor.git
     url="${url}${host}${tld}${sep}${user}/${repo}"
-    echo "Repo URL: ${url}"
+    echo "${url}"
+    return 0
+}
+
+#######################################
+# Craft repo url and add to git config using git remote add
+# Arguments:
+#   protocol: https or git
+#   host: host of existing repo (bitbucket or github)
+#   user: username
+#   repo: name of repo
+# Returns:
+#   0: remote added successfully
+#   1: invalid parameter
+#   2: remote not successfully added
+#######################################
+function git_remote_add {
+    url="$(craft_url ${1} ${2} ${3} ${4})"
+    url_status=$?
+    if [[ "${url_status}" -ne 0 ]]
+    then
+        return "${url_status}"
+    fi
 
     # Attempt to perform git remote add
-    git remote add ${host} ${url} || ( echo "git remote add failed" && return 2 )
+    git remote add ${2} ${url} || ( echo "git remote add failed" && return 2 )
+    return 0
+}
+
+function git_remote_seturl() {
+    url="$(craft_url ${1} ${2} ${3} ${4})"
+    url_status=$?
+    if [[ "${url_status}" -ne 0 ]]
+    then
+        return "${url_status}"
+    fi
+
+    # Attempt to perform git remote set-url
+    git remote set-url --add origin "${url}" || ( echo "git remote set-url failed" && return 2 )
     return 0
 }
 
@@ -118,8 +146,8 @@ function main() {
     fi
 
     # Confirm that the given path is actually a git directory
-    repo_name="${1}"
-    cd "${PWD}/${repo_name}"
+    repo_dir="${1}"
+    cd "${PWD}/${repo_dir}"
     dotgitdir="$(git rev-parse --git-dir 2> /dev/null)"
     if [[ -z "${dotgitdir}" ]]
     then
@@ -128,17 +156,50 @@ function main() {
         exit 2
     fi
     cd "${dotgitdir}"
+
+    # Confirm the directory has one remote repo (that it pushes to and pulls from)
+    push_repos="$(git remote -v | grep push | wc -l)"
+    fetch_repos="$(git remote -v | grep fetch | wc -l)"
+
+    if [[ "${push_repos}" -ne 1 ]] || [[ "${fetch_repos}" -ne 1 ]]
+    then
+        echo "Error: Directory must have one push and one fetch repo. Use 'git remote' or edit /.git/config to fix this."
+        exit 2
+    fi
+
+    # Extract components from url
+    get_fetch_url fetch_url
+    protocol="$(echo ${fetch_url} | sed -E 's/^(\w+).*/\1/')"
+    host="$(echo ${fetch_url} | sed -E 's/^.*(@|\/)(\w+)\.(com|org).*/\2/')"
+    username="$(echo ${fetch_url} | sed -E 's/^.*(:|\/)(\w+)\/.*/\2/')"
+    reponame="$(echo ${fetch_url} | sed -E 's/^.*\/(.*)\..*/\1/')"
+
+    if [[ "${protocol}" == "git" ]]
+    then
+        protocol="ssh"
+    fi
+
+    if [[ "${host}" == "bitbucket" ]]
+    then
+        new_host="github"
+    else
+        new_host="bitbucket"
+    fi
+
+    if [ -z "${2}" ]
+    then
+        empty_repo_name="${reponame}"
+    else
+        empty_repo_name="${2}"
+    fi
+
+    git_remote_seturl "${protocol}" "${new_host}" "${username}" "${empty_repo_name}"
+    git_remote_add "${protocol}" "${host}" "${username}" "${reponame}"
+    git_remote_add "${protocol}" "${new_host}" "${username}" "${empty_repo_name}"
+
+    echo "Use 'git push' or 'git push --all' to push your content to both repos."
 }
 
-# check if https or ssh
-# if https, ask if user wants to switch to ssh
-# git remote set-url --add origin git@bitbucket.org:avnestico/version-control-distributor.git
-# git remote add bitbucket git@bitbucket.org:avnestico/version-control-distributor.git
-# git remote add github git@github.com:avnestico/version-control-distributor.git
-# git push --all
-
-# https://avnestico@bitbucket.org/avnestico/version-control-distributor.git
-# https://github.com/avnestico/version-control-distributor.git
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]
 then
     main "$@"
