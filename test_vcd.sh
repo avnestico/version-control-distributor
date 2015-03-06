@@ -31,8 +31,7 @@ function temp_git_dir() {
     mkdir "${dir_name}" && cd "${dir_name}"
     git init >/dev/null
 
-    # Return string by reference
-    eval "${1}=${dir_name}"
+    echo "${dir_name}"
 }
 
 function clean_dir() {
@@ -54,7 +53,8 @@ function test_git_remote_add() {
         for host in bitbucket github
         do
             # Create temp dir and initialize temporary git repo
-            temp_git_dir temp_dir
+            temp_dir="$(temp_git_dir)"
+            cd "${temp_dir}"
 
             # Select variable name of expected url from the set above
             expected_url="test_${protocol}_${host}"
@@ -62,9 +62,9 @@ function test_git_remote_add() {
             # Perform git remote add and get url
             git_remote_add ${protocol} ${host} avnestico example >/dev/null
             test_return=$?
-            get_fetch_url test_url
+            test_url="$(get_fetch_url)"
 
-            # Use variable indirection ("!") to compare expected url to test url
+            # Use variable indirection ("${!var}") to compare expected url to test url
             if [[ "${test_return}" -eq 0 ]] && [[ "${!expected_url}" == "${test_url}" ]]
             then
                 echo "[Test] (git_remote_add) ${protocol} ${host} [Passed]"
@@ -82,7 +82,8 @@ function test_git_remote_add() {
     # Test bad parameters
 
     # Create temp dir and initialize temporary git repo
-    temp_git_dir temp_dir
+    temp_dir="$(temp_git_dir)"
+    cd "${temp_dir}"
 
     git_remote_add bad params avnestico example >/dev/null
     test_return=$?
@@ -104,9 +105,11 @@ function test_git_remote_add() {
 
 function test_main() {
     url="${1}"
-    temp_git_dir temp_dir
+    temp_dir="$(temp_git_dir)"
+    cd "${temp_dir}"
     git remote add origin "${url}"
     main . "${2}"
+    clean_dir "${temp_dir}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]

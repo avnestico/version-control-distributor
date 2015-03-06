@@ -46,8 +46,7 @@ To view this help message:
 }
 
 function get_fetch_url() {
-    fetch_url="$(git remote -v | grep fetch | sed -r 's/^\w+\s+(.*)\s\(fetch\)$/\1/' )"
-    eval "${1}=${fetch_url}"
+    git remote -v | grep fetch | sed -r 's/^\w+\s+(.*)\s\(fetch\)$/\1/'
 }
 
 function craft_url() {
@@ -171,7 +170,7 @@ function main() {
     fi
 
     # Extract components from url
-    get_fetch_url fetch_url
+    fetch_url="$(get_fetch_url)"
     protocol="$(echo ${fetch_url} | sed -E 's/^(\w+).*/\1/')"
     host="$(echo ${fetch_url} | sed -E 's/^.*(@|\/)(\w+)\.(com|org).*/\2/')"
     username="$(echo ${fetch_url} | sed -E 's/^.*(:|\/)(\w+)\/.*/\2/')"
