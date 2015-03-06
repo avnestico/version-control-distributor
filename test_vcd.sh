@@ -1,5 +1,6 @@
 #!/bin/bash
 source vcd.sh
+#set -x  # Enable if you want verbose output
 
 function run_test() {
     echo ""
